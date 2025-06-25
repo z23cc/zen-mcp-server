@@ -2,6 +2,7 @@
 
 import base64
 import ipaddress
+import json
 import logging
 import os
 import time
@@ -90,7 +91,7 @@ class OpenAIModelProvider(ModelProvider):
             supports_temperature=False,  # O3 models don't accept temperature parameter
             temperature_constraint=create_temperature_constraint("fixed"),
             description="Professional-grade reasoning (200K context) - EXTREMELY EXPENSIVE: Only for the most complex problems requiring universe-scale complexity analysis OR when the user explicitly asks for this model. Use sparingly for critical architectural decisions or exceptionally complex debugging that other models cannot handle.",
-            aliases=["o3pro"],
+            aliases=["o3-pro"],
         ),
         "o4-mini": ModelCapabilities(
             provider=ProviderType.OPENAI,
@@ -126,81 +127,81 @@ class OpenAIModelProvider(ModelProvider):
             supports_temperature=True,  # Regular models accept temperature parameter
             temperature_constraint=create_temperature_constraint("range"),
             description="GPT-4.1 (1M context) - Advanced reasoning model with large context window",
-            aliases=["gpt4.1", "gpt4"],
+            aliases=["gpt4.1"],
         ),
-
-        # Custom models (previously from custom_models.json)
         "gemini-2.5-pro": ModelCapabilities(
             provider=ProviderType.OPENAI,
             model_name="gemini-2.5-pro",
-            friendly_name="OpenAI-compatible (Gemini 2.5 Pro)",
+            friendly_name="Gemini (Pro 2.5)",
             context_window=1_048_576,  # 1M tokens
-            max_output_tokens=32_768,
-            supports_extended_thinking=False,
-            supports_system_prompts=True,
-            supports_streaming=True,
-            supports_function_calling=False,
-            supports_json_mode=True,
-            supports_images=True,
-            max_image_size_mb=20.0,
-            supports_temperature=True,
-            temperature_constraint=create_temperature_constraint("range"),
-            description="Google's Gemini 2.5 Pro via OpenAI-compatible API with vision",
-            aliases=["pro"],
-        ),
-        "gemini-2.5-flash": ModelCapabilities(
-            provider=ProviderType.OPENAI,
-            model_name="gemini-2.5-flash",
-            friendly_name="OpenAI-compatible (Gemini 2.5 Flash)",
-            context_window=1_048_576,  # 1M tokens
-            max_output_tokens=32_768,
-            supports_extended_thinking=False,
-            supports_system_prompts=True,
-            supports_streaming=True,
-            supports_function_calling=False,
-            supports_json_mode=True,
-            supports_images=True,
-            max_image_size_mb=15.0,
-            supports_temperature=True,
-            temperature_constraint=create_temperature_constraint("range"),
-            description="Google's Gemini 2.5 Flash via OpenAI-compatible API with vision",
-            aliases=["flash"],
-        ),
-        "deepseek-r1": ModelCapabilities(
-            provider=ProviderType.OPENAI,
-            model_name="deepseek-r1",
-            friendly_name="OpenAI-compatible (DeepSeek R1)",
-            context_window=65_536,  # 64K tokens
-            max_output_tokens=8_192,
+            max_output_tokens=65_536,
             supports_extended_thinking=True,
-            supports_system_prompts=True,
-            supports_streaming=True,
-            supports_function_calling=False,
-            supports_json_mode=True,
-            supports_images=False,
-            max_image_size_mb=0.0,
-            supports_temperature=True,
-            temperature_constraint=create_temperature_constraint("range"),
-            description="DeepSeek R1 with thinking mode - advanced reasoning capabilities (text-only)",
-            aliases=["deepseek"],
-        ),
-        "gpt-4o": ModelCapabilities(
-            provider=ProviderType.OPENAI,
-            model_name="gpt-4o",
-            friendly_name="OpenAI-compatible (GPT-4o)",
-            context_window=128_000,  # 128K tokens
-            max_output_tokens=16_384,
-            supports_extended_thinking=False,
             supports_system_prompts=True,
             supports_streaming=True,
             supports_function_calling=True,
             supports_json_mode=True,
-            supports_images=True,
-            max_image_size_mb=20.0,
+            supports_images=True,  # Vision capability
+            max_image_size_mb=32.0,  # Higher limit for Pro model
             supports_temperature=True,
             temperature_constraint=create_temperature_constraint("range"),
-            description="GPT-4o via OpenAI-compatible API - Advanced model with vision support",
-            aliases=["gpt4o"],
+            max_thinking_tokens=32768,  # Max thinking tokens for Pro model
+            description="Deep reasoning + thinking mode (1M context) - Complex problems, architecture, deep analysis",
+            aliases=["pro", "gemini pro", "gemini-pro"],
+        ),
+        "gemini-2.5-flash": ModelCapabilities(
+            provider=ProviderType.OPENAI,
+            model_name="gemini-2.5-flash",
+            friendly_name="Gemini (Flash 2.5)",
+            context_window=1_048_576,  # 1M tokens
+            max_output_tokens=65_536,
+            supports_extended_thinking=True,
+            supports_system_prompts=True,
+            supports_streaming=True,
+            supports_function_calling=True,
+            supports_json_mode=True,
+            supports_images=True,  # Vision capability
+            max_image_size_mb=20.0,  # Conservative 20MB limit for reliability
+            supports_temperature=True,
+            temperature_constraint=create_temperature_constraint("range"),
+            max_thinking_tokens=24576,  # Flash 2.5 thinking budget limit
+            description="Ultra-fast (1M context) - Quick analysis, simple queries, rapid iterations",
+            aliases=["flash", "flash2.5"],
+        ),
+        "grok-3": ModelCapabilities(
+            provider=ProviderType.OPENAI,
+            model_name="grok-3",
+            friendly_name="X.AI (Grok 3)",
+            context_window=131_072,  # 131K tokens
+            max_output_tokens=131072,
+            supports_extended_thinking=False,
+            supports_system_prompts=True,
+            supports_streaming=True,
+            supports_function_calling=True,
+            supports_json_mode=False,  # Assuming GROK doesn't have JSON mode yet
+            supports_images=False,  # Assuming GROK is text-only for now
+            max_image_size_mb=0.0,
+            supports_temperature=True,
+            temperature_constraint=create_temperature_constraint("range"),
+            description="GROK-3 (131K context) - Advanced reasoning model from X.AI, excellent for complex analysis",
+            aliases=["grok", "grok3"],
+        ),
+        "grok-3-deepsearch": ModelCapabilities(
+            provider=ProviderType.OPENAI,
+            model_name="grok-3-deepsearch",
+            friendly_name="X.AI (Grok 3 deepsearch)",
+            context_window=1_048_576, 
+            max_output_tokens=1_048_576,
+            supports_extended_thinking=True,
+            supports_system_prompts=True,
+            supports_streaming=True,
+            supports_function_calling=True,
+            supports_json_mode=False,  # Assuming GROK doesn't have JSON mode yet
+            supports_images=False,  # Assuming GROK is text-only for now
+            max_image_size_mb=0.0,
+            supports_temperature=True,
+            temperature_constraint=create_temperature_constraint("range"),
+            description="grok-3-deepsearch (1M context) - Higher performance variant, faster processing but more expensive",
+            aliases=["grok3r"],
         ),
     }
 
@@ -483,17 +484,20 @@ class OpenAIModelProvider(ModelProvider):
         Returns:
             ModelResponse with generated content and metadata
         """
+        # Resolve model alias before processing
+        resolved_model_name = self._resolve_model_name(model_name)
+
         # Validate model name against allow-list
         if not self.validate_model_name(model_name):
             raise ValueError(f"Model '{model_name}' not in allowed models list. Allowed models: {self.allowed_models}")
 
         # Get effective temperature for this model
-        effective_temperature = self.get_effective_temperature(model_name, temperature)
+        effective_temperature = self.get_effective_temperature(resolved_model_name, temperature)
 
         # Only validate if temperature is not None (meaning the model supports it)
         if effective_temperature is not None:
             # Validate parameters with the effective temperature
-            self.validate_parameters(model_name, effective_temperature)
+            self.validate_parameters(resolved_model_name, effective_temperature)
 
         # Prepare messages
         messages = []
@@ -505,7 +509,7 @@ class OpenAIModelProvider(ModelProvider):
         user_content.append({"type": "text", "text": prompt})
 
         # Add images if provided and model supports vision
-        if images and self._supports_vision(model_name):
+        if images and self._supports_vision(resolved_model_name):
             for image_path in images:
                 try:
                     image_content = self._process_image(image_path)
@@ -515,8 +519,8 @@ class OpenAIModelProvider(ModelProvider):
                     logging.warning(f"Failed to process image {image_path}: {e}")
                     # Continue with other images and text
                     continue
-        elif images and not self._supports_vision(model_name):
-            logging.warning(f"Model {model_name} does not support images, ignoring {len(images)} image(s)")
+        elif images and not self._supports_vision(resolved_model_name):
+            logging.warning(f"Model {resolved_model_name} does not support images, ignoring {len(images)} image(s)")
 
         # Add user message
         if len(user_content) == 1:
@@ -528,12 +532,12 @@ class OpenAIModelProvider(ModelProvider):
 
         # Prepare completion parameters
         completion_params = {
-            "model": model_name,
+            "model": resolved_model_name,
             "messages": messages,
         }
 
         # Check model capabilities once to determine parameter support
-        resolved_model = self._resolve_model_name(model_name)
+        resolved_model = resolved_model_name
 
         # Use the effective temperature we calculated earlier
         if effective_temperature is not None:
@@ -580,8 +584,15 @@ class OpenAIModelProvider(ModelProvider):
                 # Generate completion
                 response = self.client.chat.completions.create(**completion_params)
 
-                # Extract content and usage
-                content = response.choices[0].message.content
+                # Extract content and usage with proper null checks
+                if not response.choices or len(response.choices) == 0:
+                    raise RuntimeError("No choices returned in API response")
+
+                choice = response.choices[0]
+                if not choice.message:
+                    raise RuntimeError("No message in API response choice")
+
+                content = choice.message.content or ""
                 usage = self._extract_usage(response)
 
                 return ModelResponse(
@@ -591,10 +602,10 @@ class OpenAIModelProvider(ModelProvider):
                     friendly_name=self.FRIENDLY_NAME,
                     provider=self.get_provider_type(),
                     metadata={
-                        "finish_reason": response.choices[0].finish_reason,
-                        "model": response.model,  # Actual model used
-                        "id": response.id,
-                        "created": response.created,
+                        "finish_reason": choice.finish_reason,
+                        "model": getattr(response, "model", model_name),  # Actual model used
+                        "id": getattr(response, "id", ""),
+                        "created": getattr(response, "created", 0),
                     },
                 )
 
@@ -1025,28 +1036,7 @@ class OpenAIModelProvider(ModelProvider):
 
         return True
 
-    def generate_content(
-        self,
-        prompt: str,
-        model_name: str,
-        system_prompt: Optional[str] = None,
-        temperature: float = 0.7,
-        max_output_tokens: Optional[int] = None,
-        **kwargs,
-    ) -> ModelResponse:
-        """Generate content using OpenAI API with proper model name resolution."""
-        # Resolve model alias before making API call
-        resolved_model_name = self._resolve_model_name(model_name)
 
-        # Call parent implementation with resolved model name
-        return super().generate_content(
-            prompt=prompt,
-            model_name=resolved_model_name,
-            system_prompt=system_prompt,
-            temperature=temperature,
-            max_output_tokens=max_output_tokens,
-            **kwargs,
-        )
 
     def supports_thinking_mode(self, model_name: str) -> bool:
         """Check if the model supports extended thinking mode."""
