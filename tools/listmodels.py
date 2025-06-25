@@ -74,17 +74,13 @@ class ListModelsTool(BaseTool):
             Formatted list of models by provider
         """
         from providers.base import ProviderType
-        from providers.openrouter_registry import OpenRouterModelRegistry
         from providers.registry import ModelProviderRegistry
 
         output_lines = ["# Available AI Models\n"]
 
         # Map provider types to friendly names and their models
         provider_info = {
-            ProviderType.GOOGLE: {"name": "Google Gemini", "env_key": "GEMINI_API_KEY"},
-            ProviderType.OPENAI: {"name": "OpenAI", "env_key": "OPENAI_API_KEY"},
-            ProviderType.XAI: {"name": "X.AI (Grok)", "env_key": "XAI_API_KEY"},
-            ProviderType.DIAL: {"name": "AI DIAL", "env_key": "DIAL_API_KEY"},
+            ProviderType.OPENAI: {"name": "OpenAI-compatible Models", "env_key": "OPENAI_API_KEY"},
         }
 
         # Check each native provider type
@@ -142,116 +138,13 @@ class ListModelsTool(BaseTool):
 
             output_lines.append("")
 
-        # Check OpenRouter
-        openrouter_key = os.getenv("OPENROUTER_API_KEY")
-        is_openrouter_configured = openrouter_key and openrouter_key != "your_openrouter_api_key_here"
-
-        output_lines.append(f"## OpenRouter {'✅' if is_openrouter_configured else '❌'}")
-
-        if is_openrouter_configured:
-            output_lines.append("**Status**: Configured and available")
-            output_lines.append("**Description**: Access to multiple cloud AI providers via unified API")
-
-            try:
-                # Get OpenRouter provider from registry to properly apply restrictions
-                from providers.base import ProviderType
-                from providers.registry import ModelProviderRegistry
-
-                provider = ModelProviderRegistry.get_provider(ProviderType.OPENROUTER)
-                if provider:
-                    # Get models with restrictions applied
-                    available_models = provider.list_models(respect_restrictions=True)
-                    registry = OpenRouterModelRegistry()
-
-                    # Group by provider for better organization
-                    providers_models = {}
-                    for model_name in available_models:  # Show ALL available models
-                        # Try to resolve to get config details
-                        config = registry.resolve(model_name)
-                        if config:
-                            # Extract provider from model_name
-                            provider_name = config.model_name.split("/")[0] if "/" in config.model_name else "other"
-                            if provider_name not in providers_models:
-                                providers_models[provider_name] = []
-                            providers_models[provider_name].append((model_name, config))
-                        else:
-                            # Model without config - add with basic info
-                            provider_name = model_name.split("/")[0] if "/" in model_name else "other"
-                            if provider_name not in providers_models:
-                                providers_models[provider_name] = []
-                            providers_models[provider_name].append((model_name, None))
-
-                    output_lines.append("\n**Available Models**:")
-                    for provider_name, models in sorted(providers_models.items()):
-                        output_lines.append(f"\n*{provider_name.title()}:*")
-                        for alias, config in models:  # Show ALL models from each provider
-                            if config:
-                                context_str = f"{config.context_window // 1000}K" if config.context_window else "?"
-                                output_lines.append(f"- `{alias}` → `{config.model_name}` ({context_str} context)")
-                            else:
-                                output_lines.append(f"- `{alias}`")
-
-                    total_models = len(available_models)
-                    # Show all models - no truncation message needed
-
-                    # Check if restrictions are applied
-                    restriction_service = None
-                    try:
-                        from utils.model_restrictions import get_restriction_service
-
-                        restriction_service = get_restriction_service()
-                        if restriction_service.has_restrictions(ProviderType.OPENROUTER):
-                            allowed_set = restriction_service.get_allowed_models(ProviderType.OPENROUTER)
-                            output_lines.append(
-                                f"\n**Note**: Restricted to models matching: {', '.join(sorted(allowed_set))}"
-                            )
-                    except Exception as e:
-                        logger.warning(f"Error checking OpenRouter restrictions: {e}")
-                else:
-                    output_lines.append("**Error**: Could not load OpenRouter provider")
-
-            except Exception as e:
-                output_lines.append(f"**Error loading models**: {str(e)}")
-        else:
-            output_lines.append("**Status**: Not configured (set OPENROUTER_API_KEY)")
-            output_lines.append("**Note**: Provides access to GPT-4, Claude, Mistral, and many more")
-
-        output_lines.append("")
-
-        # Check Custom API
-        custom_url = os.getenv("CUSTOM_API_URL")
-
-        output_lines.append(f"## Custom/Local API {'✅' if custom_url else '❌'}")
-
-        if custom_url:
-            output_lines.append("**Status**: Configured and available")
-            output_lines.append(f"**Endpoint**: {custom_url}")
-            output_lines.append("**Description**: Local models via Ollama, vLLM, LM Studio, etc.")
-
-            try:
-                registry = OpenRouterModelRegistry()
-                custom_models = []
-
-                for alias in registry.list_aliases():
-                    config = registry.resolve(alias)
-                    if config and config.is_custom:
-                        custom_models.append((alias, config))
-
-                if custom_models:
-                    output_lines.append("\n**Custom Models**:")
-                    for alias, config in custom_models:
-                        context_str = f"{config.context_window // 1000}K" if config.context_window else "?"
-                        output_lines.append(f"- `{alias}` → `{config.model_name}` ({context_str} context)")
-                        if config.description:
-                            output_lines.append(f"  - {config.description}")
-
-            except Exception as e:
-                output_lines.append(f"**Error loading custom models**: {str(e)}")
-        else:
-            output_lines.append("**Status**: Not configured (set CUSTOM_API_URL)")
-            output_lines.append("**Example**: CUSTOM_API_URL=http://localhost:11434 (for Ollama)")
-
-        output_lines.append("")
+        # Show endpoint configuration
+        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        if base_url != "https://api.openai.com/v1":
+            output_lines.append(f"## Custom Endpoint Configuration")
+            output_lines.append(f"**Base URL**: {base_url}")
+            output_lines.append("**Description**: Using custom OpenAI-compatible endpoint")
+            output_lines.append("")
 
         # Add summary
         output_lines.append("## Summary")
@@ -264,10 +157,12 @@ class ListModelsTool(BaseTool):
                 if ModelProviderRegistry.get_provider(provider_type) is not None
             ]
         )
-        if is_openrouter_configured:
-            configured_count += 1
-        if custom_url:
-            configured_count += 1
+
+        # Check if using custom endpoint (OpenRouter, local models, etc.)
+        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        if base_url != "https://api.openai.com/v1":
+            # Custom endpoint is already counted as part of OpenAI provider
+            pass
 
         output_lines.append(f"**Configured Providers**: {configured_count}")
 
@@ -284,10 +179,10 @@ class ListModelsTool(BaseTool):
 
         # Add usage tips
         output_lines.append("\n**Usage Tips**:")
-        output_lines.append("- Use model aliases (e.g., 'flash', 'o3', 'opus') for convenience")
+        output_lines.append("- Use model aliases (e.g., 'flash', 'pro', 'o3') for convenience")
         output_lines.append("- In auto mode, Claude will select the best model for each task")
-        output_lines.append("- Custom models are only available when CUSTOM_API_URL is set")
-        output_lines.append("- OpenRouter provides access to many cloud models with one API key")
+        output_lines.append("- Set OPENAI_BASE_URL to use custom OpenAI-compatible endpoints")
+        output_lines.append("- All models are accessed through the unified OpenAI-compatible interface")
 
         # Format output
         content = "\n".join(output_lines)

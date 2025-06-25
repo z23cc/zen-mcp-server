@@ -308,18 +308,13 @@ class BaseTool(ABC):
 
             # Map provider types to readable names
             provider_names = {
-                ProviderType.GOOGLE: "Gemini models",
-                ProviderType.OPENAI: "OpenAI models",
-                ProviderType.XAI: "X.AI GROK models",
-                ProviderType.DIAL: "DIAL models",
-                ProviderType.CUSTOM: "Custom models",
-                ProviderType.OPENROUTER: "OpenRouter models",
+                ProviderType.OPENAI: "OpenAI-compatible models",
             }
 
             # Check available providers and add their model descriptions
 
-            # Start with native providers
-            for provider_type in [ProviderType.GOOGLE, ProviderType.OPENAI, ProviderType.XAI, ProviderType.DIAL]:
+            # Start with available providers
+            for provider_type in [ProviderType.OPENAI]:
                 # Only if this is registered / available
                 provider = ModelProviderRegistry.get_provider(provider_type)
                 if provider:
@@ -330,8 +325,9 @@ class BaseTool(ABC):
                             model_config = provider.SUPPORTED_MODELS.get(model_name)
                             if model_config and model_config.description:
                                 if not provider_section_added:
+                                    env_key = "OPENAI_API_KEY or OPENROUTER_API_KEY"
                                     model_desc_parts.append(
-                                        f"\n{provider_names[provider_type]} - Available when {provider_type.value.upper()}_API_KEY is configured:"
+                                        f"\n{provider_names[provider_type]} - Available when {env_key} is configured:"
                                     )
                                     provider_section_added = True
                                 model_desc_parts.append(f"- '{model_name}': {model_config.description}")
@@ -1430,8 +1426,9 @@ When recommending searches, be specific about what information you need and why 
         try:
             from providers.base import ProviderType
 
-            # ModelCapabilities dataclass has provider field defined
-            if capabilities.provider == ProviderType.CUSTOM:
+            # For custom endpoints, apply a more conservative limit
+            base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+            if base_url != "https://api.openai.com/v1":
                 effective_limit_mb = min(max_size_mb, 40.0)
         except Exception:
             pass

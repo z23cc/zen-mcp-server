@@ -356,129 +356,56 @@ def configure_providers():
     Configure and validate AI providers based on available API keys.
 
     This function checks for API keys and registers the appropriate providers.
-    At least one valid API key (Gemini or OpenAI) is required.
+    At least one valid API key (OpenAI compatible) is required.
 
     Raises:
         ValueError: If no valid API keys are found or conflicting configurations detected
     """
     from providers import ModelProviderRegistry
     from providers.base import ProviderType
-    from providers.custom import CustomProvider
-    from providers.dial import DIALModelProvider
-    from providers.gemini import GeminiModelProvider
     from providers.openai_provider import OpenAIModelProvider
-    from providers.openrouter import OpenRouterProvider
-    from providers.xai import XAIModelProvider
     from utils.model_restrictions import get_restriction_service
 
     valid_providers = []
-    has_native_apis = False
-    has_openrouter = False
-    has_custom = False
-
-    # Check for Gemini API key
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    if gemini_key and gemini_key != "your_gemini_api_key_here":
-        valid_providers.append("Gemini")
-        has_native_apis = True
-        logger.info("Gemini API key found - Gemini models available")
 
     # Check for OpenAI API key
     openai_key = os.getenv("OPENAI_API_KEY")
+    base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+
+    # Determine provider name based on endpoint
+    api_key = None
+    provider_name = None
+
     if openai_key and openai_key != "your_openai_api_key_here":
-        valid_providers.append("OpenAI (o3)")
-        has_native_apis = True
-        logger.info("OpenAI API key found - o3 model available")
-
-    # Check for X.AI API key
-    xai_key = os.getenv("XAI_API_KEY")
-    if xai_key and xai_key != "your_xai_api_key_here":
-        valid_providers.append("X.AI (GROK)")
-        has_native_apis = True
-        logger.info("X.AI API key found - GROK models available")
-
-    # Check for DIAL API key
-    dial_key = os.getenv("DIAL_API_KEY")
-    if dial_key and dial_key != "your_dial_api_key_here":
-        valid_providers.append("DIAL")
-        has_native_apis = True
-        logger.info("DIAL API key found - DIAL models available")
-
-    # Check for OpenRouter API key
-    openrouter_key = os.getenv("OPENROUTER_API_KEY")
-    if openrouter_key and openrouter_key != "your_openrouter_api_key_here":
-        valid_providers.append("OpenRouter")
-        has_openrouter = True
-        logger.info("OpenRouter API key found - Multiple models available via OpenRouter")
-
-    # Check for custom API endpoint (Ollama, vLLM, etc.)
-    custom_url = os.getenv("CUSTOM_API_URL")
-    if custom_url:
-        # IMPORTANT: Always read CUSTOM_API_KEY even if empty
-        # - Some providers (vLLM, LM Studio, enterprise APIs) require authentication
-        # - Others (Ollama) work without authentication (empty key)
-        # - DO NOT remove this variable - it's needed for provider factory function
-        custom_key = os.getenv("CUSTOM_API_KEY", "")  # Default to empty (Ollama doesn't need auth)
-        custom_model = os.getenv("CUSTOM_MODEL_NAME", "llama3.2")
-        valid_providers.append(f"Custom API ({custom_url})")
-        has_custom = True
-        logger.info(f"Custom API endpoint found: {custom_url} with model {custom_model}")
-        if custom_key:
-            logger.debug("Custom API key provided for authentication")
+        api_key = openai_key
+        if base_url == "https://api.openai.com/v1":
+            provider_name = "OpenAI"
+        elif "openrouter.ai" in base_url:
+            provider_name = "OpenAI-compatible (OpenRouter)"
         else:
-            logger.debug("No custom API key provided (using unauthenticated access)")
+            provider_name = f"OpenAI-compatible ({base_url})"
 
-    # Register providers in priority order:
-    # 1. Native APIs first (most direct and efficient)
-    if has_native_apis:
-        if gemini_key and gemini_key != "your_gemini_api_key_here":
-            ModelProviderRegistry.register_provider(ProviderType.GOOGLE, GeminiModelProvider)
-        if openai_key and openai_key != "your_openai_api_key_here":
-            ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
-        if xai_key and xai_key != "your_xai_api_key_here":
-            ModelProviderRegistry.register_provider(ProviderType.XAI, XAIModelProvider)
-        if dial_key and dial_key != "your_dial_api_key_here":
-            ModelProviderRegistry.register_provider(ProviderType.DIAL, DIALModelProvider)
+    if api_key:
+        valid_providers.append(provider_name)
+        logger.info(f"{provider_name} API key found - Models available via {base_url}")
 
-    # 2. Custom provider second (for local/private models)
-    if has_custom:
-        # Factory function that creates CustomProvider with proper parameters
-        def custom_provider_factory(api_key=None):
-            # api_key is CUSTOM_API_KEY (can be empty for Ollama), base_url from CUSTOM_API_URL
-            base_url = os.getenv("CUSTOM_API_URL", "")
-            return CustomProvider(api_key=api_key or "", base_url=base_url)  # Use provided API key or empty string
-
-        ModelProviderRegistry.register_provider(ProviderType.CUSTOM, custom_provider_factory)
-
-    # 3. OpenRouter last (catch-all for everything else)
-    if has_openrouter:
-        ModelProviderRegistry.register_provider(ProviderType.OPENROUTER, OpenRouterProvider)
+    # Register OpenAI provider (supports all endpoints via base URL)
+    if api_key:
+        ModelProviderRegistry.register_provider(ProviderType.OPENAI, OpenAIModelProvider)
 
     # Require at least one valid provider
     if not valid_providers:
         raise ValueError(
-            "At least one API configuration is required. Please set either:\n"
-            "- GEMINI_API_KEY for Gemini models\n"
-            "- OPENAI_API_KEY for OpenAI o3 model\n"
-            "- XAI_API_KEY for X.AI GROK models\n"
-            "- DIAL_API_KEY for DIAL models\n"
-            "- OPENROUTER_API_KEY for OpenRouter (multiple models)\n"
-            "- CUSTOM_API_URL for local models (Ollama, vLLM, etc.)"
+            "OPENAI_API_KEY is required. Please set one of the following configurations:\n"
+            "\nExamples:\n"
+            "- OPENAI_API_KEY=sk-... (official OpenAI)\n"
+            "- OPENAI_API_KEY=sk-or-... OPENAI_BASE_URL=https://openrouter.ai/api/v1 (OpenRouter)\n"
+            "- OPENAI_API_KEY=sk-... OPENAI_BASE_URL=http://localhost:11434/v1 (Ollama)\n"
+            "- OPENAI_API_KEY=sk-... OPENAI_BASE_URL=https://api-key.info/v1 (custom endpoint)"
         )
 
-    logger.info(f"Available providers: {', '.join(valid_providers)}")
-
-    # Log provider priority
-    priority_info = []
-    if has_native_apis:
-        priority_info.append("Native APIs (Gemini, OpenAI)")
-    if has_custom:
-        priority_info.append("Custom endpoints")
-    if has_openrouter:
-        priority_info.append("OpenRouter (catch-all)")
-
-    if len(priority_info) > 1:
-        logger.info(f"Provider priority: {' → '.join(priority_info)}")
+    logger.info(f"Available provider: {', '.join(valid_providers)}")
+    logger.info(f"Using endpoint: {base_url}")
 
     # Register cleanup function for providers
     def cleanup_providers():
@@ -513,7 +440,7 @@ def configure_providers():
 
         # Validate restrictions against known models
         provider_instances = {}
-        provider_types_to_validate = [ProviderType.GOOGLE, ProviderType.OPENAI, ProviderType.XAI, ProviderType.DIAL]
+        provider_types_to_validate = [ProviderType.OPENAI]
         for provider_type in provider_types_to_validate:
             provider = ModelProviderRegistry.get_provider(provider_type)
             if provider:
@@ -532,7 +459,7 @@ def configure_providers():
         if not available_models:
             logger.error(
                 "Auto mode is enabled but no models are available after applying restrictions. "
-                "Please check your OPENAI_ALLOWED_MODELS and GOOGLE_ALLOWED_MODELS settings."
+                "Please check your OPENAI_ALLOWED_MODELS settings."
             )
             raise ValueError(
                 "No models available for auto mode due to restrictions. "
@@ -568,7 +495,8 @@ async def handle_list_tools() -> list[Tool]:
         )
 
     # Log cache efficiency info
-    if os.getenv("OPENROUTER_API_KEY") and os.getenv("OPENROUTER_API_KEY") != "your_openrouter_api_key_here":
+    base_url = os.getenv("OPENAI_BASE_URL", "")
+    if "openrouter.ai" in base_url:
         logger.debug("OpenRouter registry cache used efficiently across all tool schemas")
 
     logger.debug(f"Returning {len(tools)} tools to MCP client")

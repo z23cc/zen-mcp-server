@@ -291,13 +291,9 @@ class VersionTool(BaseTool):
 
             # Check each provider type
             provider_types = [
-                ProviderType.GOOGLE,
                 ProviderType.OPENAI,
-                ProviderType.XAI,
-                ProviderType.OPENROUTER,
-                ProviderType.CUSTOM,
             ]
-            provider_names = ["Google Gemini", "OpenAI", "X.AI", "OpenRouter", "Custom/Local"]
+            provider_names = ["OpenAI-compatible"]
 
             for provider_type, provider_name in zip(provider_types, provider_names):
                 provider = ModelProviderRegistry.get_provider(provider_type)

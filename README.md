@@ -265,11 +265,15 @@ cat ~/.claude.json | grep -A 10 "zen"
 # Edit .env to add your API keys (if not already set in environment)
 nano .env
 
-# The file will contain, at least one should be set:
-# GEMINI_API_KEY=your-gemini-api-key-here  # For Gemini models
-# OPENAI_API_KEY=your-openai-api-key-here  # For O3 model
-# OPENROUTER_API_KEY=your-openrouter-key  # For OpenRouter (see docs/custom_models.md)
-# DIAL_API_KEY=your-dial-api-key-here      # For DIAL platform
+# The file will contain your API configuration:
+# OPENAI_API_KEY=your-api-key-here         # Required: Your API key
+# OPENAI_BASE_URL=https://your-endpoint/v1 # Optional: Custom endpoint URL
+
+# Examples:
+# Official OpenAI:     OPENAI_API_KEY=sk-...
+# OpenRouter:          OPENAI_API_KEY=sk-or-... OPENAI_BASE_URL=https://openrouter.ai/api/v1
+# Custom endpoint:     OPENAI_API_KEY=sk-... OPENAI_BASE_URL=https://api-key.info/v1
+# Local models:        OPENAI_API_KEY=dummy OPENAI_BASE_URL=http://localhost:11434/v1
 
 # For DIAL (optional configuration):
 # DIAL_API_HOST=https://core.dialx.ai      # Default DIAL host (optional)

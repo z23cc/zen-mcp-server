@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import Mock
 
-from providers.openai_compatible import OpenAICompatibleProvider
+from providers.openai_provider import OpenAIModelProvider
 
 
 class TestOpenAICompatibleTokenUsage(unittest.TestCase):
@@ -13,7 +13,7 @@ class TestOpenAICompatibleTokenUsage(unittest.TestCase):
         """Set up test fixtures."""
 
         # Create a concrete implementation for testing
-        class TestProvider(OpenAICompatibleProvider):
+        class TestProvider(OpenAIModelProvider):
             FRIENDLY_NAME = "Test"
             SUPPORTED_MODELS = {"test-model": {"context_window": 4096}}
 

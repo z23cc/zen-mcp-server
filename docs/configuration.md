@@ -106,26 +106,25 @@ OPENAI_ALLOWED_MODELS=o3-mini,o4-mini,mini
 # Gemini model restrictions  
 GOOGLE_ALLOWED_MODELS=flash,pro
 
-# X.AI GROK model restrictions
-XAI_ALLOWED_MODELS=grok-3,grok-3-fast
-
-# OpenRouter model restrictions (affects models via custom provider)
-OPENROUTER_ALLOWED_MODELS=opus,sonnet,mistral
+# OpenAI-compatible model restrictions
+OPENAI_ALLOWED_MODELS=o3,o3-mini,o4-mini,gpt-4o
 ```
 
 **Supported Model Names:**
 
-**OpenAI Models:**
+**OpenAI-compatible Models:**
 - `o3` (200K context, high reasoning)
 - `o3-mini` (200K context, balanced)
+- `o3-pro` (200K context, premium reasoning)
 - `o4-mini` (200K context, latest balanced)
-- `mini` (shorthand for o4-mini)
-
-**Gemini Models:**
+- `gpt-4.1` (128K context, advanced)
+- `gpt-4o` (128K context, multimodal)
 - `gemini-2.5-flash` (1M context, fast)
 - `gemini-2.5-pro` (1M context, powerful)
-- `flash` (shorthand for Flash model)
-- `pro` (shorthand for Pro model)
+- `deepseek-r1` (64K context, thinking mode)
+- `mini` (shorthand for o4-mini)
+- `pro` (shorthand for gemini-2.5-pro)
+- `flash` (shorthand for gemini-2.5-flash)
 
 **X.AI GROK Models:**
 - `grok-3` (131K context, advanced reasoning)
@@ -191,10 +190,9 @@ CONVERSATION_TIMEOUT_HOURS=1
 ```env
 # Production with cost controls
 DEFAULT_MODEL=auto
-GEMINI_API_KEY=your-gemini-key
-OPENAI_API_KEY=your-openai-key
-GOOGLE_ALLOWED_MODELS=flash
-OPENAI_ALLOWED_MODELS=o4-mini
+OPENAI_API_KEY=your-api-key
+OPENAI_BASE_URL=https://your-endpoint.com/v1
+OPENAI_ALLOWED_MODELS=o4-mini,pro,flash
 LOG_LEVEL=INFO
 CONVERSATION_TIMEOUT_HOURS=3
 ```
@@ -202,19 +200,19 @@ CONVERSATION_TIMEOUT_HOURS=3
 ### Local Development
 ```env
 # Local models only
-DEFAULT_MODEL=llama3.2
-CUSTOM_API_URL=http://localhost:11434/v1
-CUSTOM_API_KEY=
-CUSTOM_MODEL_NAME=llama3.2
+DEFAULT_MODEL=auto
+OPENAI_API_KEY=dummy-key
+OPENAI_BASE_URL=http://localhost:11434/v1
 LOG_LEVEL=DEBUG
 ```
 
-### OpenRouter Only
+### OpenRouter Setup
 ```env
 # Single API for multiple models
 DEFAULT_MODEL=auto
-OPENROUTER_API_KEY=your-openrouter-key
-OPENROUTER_ALLOWED_MODELS=opus,sonnet,gpt-4
+OPENAI_API_KEY=your-openrouter-key
+OPENAI_BASE_URL=https://openrouter.ai/api/v1
+OPENAI_ALLOWED_MODELS=pro,flash,o3,gpt4
 LOG_LEVEL=INFO
 ```
 

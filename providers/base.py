@@ -12,12 +12,7 @@ logger = logging.getLogger(__name__)
 class ProviderType(Enum):
     """Supported model provider types."""
 
-    GOOGLE = "google"
     OPENAI = "openai"
-    XAI = "xai"
-    OPENROUTER = "openrouter"
-    CUSTOM = "custom"
-    DIAL = "dial"
 
 
 class TemperatureConstraint(ABC):
@@ -181,7 +176,7 @@ class ModelResponse:
     usage: dict[str, int] = field(default_factory=dict)  # input_tokens, output_tokens, total_tokens
     model_name: str = ""
     friendly_name: str = ""  # Human-friendly name like "Gemini" or "OpenAI"
-    provider: ProviderType = ProviderType.GOOGLE
+    provider: ProviderType = ProviderType.OPENAI
     metadata: dict[str, Any] = field(default_factory=dict)  # Provider-specific metadata
 
     @property

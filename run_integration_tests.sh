@@ -30,35 +30,25 @@ fi
 echo "🔑 Checking API key availability:"
 echo "---------------------------------"
 
-# Check which API keys are available
-if [[ -n "$GEMINI_API_KEY" ]] || grep -q "GEMINI_API_KEY=" .env 2>/dev/null; then
-    echo "✅ GEMINI_API_KEY configured"
-else
-    echo "❌ GEMINI_API_KEY not found"
-fi
-
+# Check API configuration
 if [[ -n "$OPENAI_API_KEY" ]] || grep -q "OPENAI_API_KEY=" .env 2>/dev/null; then
     echo "✅ OPENAI_API_KEY configured"
+
+    # Check endpoint configuration
+    if [[ -n "$OPENAI_BASE_URL" ]] || grep -q "OPENAI_BASE_URL=" .env 2>/dev/null; then
+        base_url=$(grep "OPENAI_BASE_URL=" .env 2>/dev/null | cut -d'=' -f2 || echo "$OPENAI_BASE_URL")
+        if [[ "$base_url" == *"openrouter.ai"* ]]; then
+            echo "✅ OpenRouter endpoint configured"
+        elif [[ "$base_url" == *"api.openai.com"* ]]; then
+            echo "✅ Official OpenAI endpoint configured"
+        else
+            echo "✅ Custom endpoint configured: $base_url"
+        fi
+    else
+        echo "✅ Using default OpenAI endpoint"
+    fi
 else
     echo "❌ OPENAI_API_KEY not found"
-fi
-
-if [[ -n "$XAI_API_KEY" ]] || grep -q "XAI_API_KEY=" .env 2>/dev/null; then
-    echo "✅ XAI_API_KEY configured"
-else
-    echo "❌ XAI_API_KEY not found"
-fi
-
-if [[ -n "$OPENROUTER_API_KEY" ]] || grep -q "OPENROUTER_API_KEY=" .env 2>/dev/null; then
-    echo "✅ OPENROUTER_API_KEY configured"
-else
-    echo "❌ OPENROUTER_API_KEY not found"
-fi
-
-if [[ -n "$CUSTOM_API_URL" ]] || grep -q "CUSTOM_API_URL=" .env 2>/dev/null; then
-    echo "✅ CUSTOM_API_URL configured (local models)"
-else
-    echo "❌ CUSTOM_API_URL not found"
 fi
 
 echo ""

@@ -75,10 +75,7 @@ The tool displays:
 The available models depend on your configuration:
 
 **API Keys Required:**
-- `GEMINI_API_KEY` - Enables Gemini Pro and Flash models
-- `OPENAI_API_KEY` - Enables OpenAI O3, O4-mini, and GPT models
-- `OPENROUTER_API_KEY` - Enables access to multiple providers through OpenRouter
-- `CUSTOM_API_URL` - Enables local/custom models (Ollama, vLLM, etc.)
+- `OPENAI_API_KEY` - Enables OpenAI-compatible models (OpenAI, custom endpoints, local models)
 
 **Model Restrictions:**
 If you've set model usage restrictions via environment variables, the tool will show:

@@ -158,8 +158,6 @@ cleanup_docker() {
     
     # Define containers to remove
     local containers=(
-        "gemini-mcp-server"
-        "gemini-mcp-redis"
         "zen-mcp-server"
         "zen-mcp-redis"
         "zen-mcp-log-monitor"
@@ -179,7 +177,7 @@ cleanup_docker() {
     done
     
     # Remove images
-    local images=("gemini-mcp-server:latest" "zen-mcp-server:latest")
+    local images=("zen-mcp-server:latest")
     for image in "${images[@]}"; do
         if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^${image}$" 2>/dev/null; then
             if [[ "$found_artifacts" == false ]]; then
@@ -987,11 +985,7 @@ setup_env_file() {
     
     # Update API keys from environment if present
     local api_keys=(
-        "GEMINI_API_KEY:your_gemini_api_key_here"
         "OPENAI_API_KEY:your_openai_api_key_here"
-        "XAI_API_KEY:your_xai_api_key_here"
-        "DIAL_API_KEY:your_dial_api_key_here"
-        "OPENROUTER_API_KEY:your_openrouter_api_key_here"
     )
     
     for key_pair in "${api_keys[@]}"; do
@@ -1039,11 +1033,7 @@ migrate_env_file() {
 validate_api_keys() {
     local has_key=false
     local api_keys=(
-        "GEMINI_API_KEY:your_gemini_api_key_here"
         "OPENAI_API_KEY:your_openai_api_key_here"
-        "XAI_API_KEY:your_xai_api_key_here"
-        "DIAL_API_KEY:your_dial_api_key_here"
-        "OPENROUTER_API_KEY:your_openrouter_api_key_here"
     )
     
     for key_pair in "${api_keys[@]}"; do
@@ -1057,23 +1047,32 @@ validate_api_keys() {
         fi
     done
     
-    # Check custom API URL
-    if [[ -n "${CUSTOM_API_URL:-}" ]]; then
-        print_success "CUSTOM_API_URL configured: $CUSTOM_API_URL"
+    # Check custom base URL
+    if [[ -n "${OPENAI_BASE_URL:-}" ]]; then
+        print_success "OPENAI_BASE_URL configured: $OPENAI_BASE_URL"
         has_key=true
     fi
-    
+
     if [[ "$has_key" == false ]]; then
-        print_error "No API keys found in .env!"
+        print_error "No API configuration found in .env!"
         echo "" >&2
-        echo "Please edit .env and add at least one API key:" >&2
-        echo "  GEMINI_API_KEY=your-actual-key" >&2
+        echo "Please edit .env and add your API configuration:" >&2
         echo "  OPENAI_API_KEY=your-actual-key" >&2
-        echo "  XAI_API_KEY=your-actual-key" >&2
-        echo "  DIAL_API_KEY=your-actual-key" >&2
-        echo "  OPENROUTER_API_KEY=your-actual-key" >&2
+        echo "  OPENAI_BASE_URL=https://your-endpoint.com/v1  # Optional for custom endpoints" >&2
         echo "" >&2
-        print_info "After adding your API keys, run ./run-server.sh again" >&2
+        echo "Examples:" >&2
+        echo "  # Official OpenAI:" >&2
+        echo "  OPENAI_API_KEY=sk-..." >&2
+        echo "" >&2
+        echo "  # OpenRouter:" >&2
+        echo "  OPENAI_API_KEY=sk-or-..." >&2
+        echo "  OPENAI_BASE_URL=https://openrouter.ai/api/v1" >&2
+        echo "" >&2
+        echo "  # Custom endpoint:" >&2
+        echo "  OPENAI_API_KEY=sk-..." >&2
+        echo "  OPENAI_BASE_URL=https://api-key.info/v1" >&2
+        echo "" >&2
+        print_info "After adding your API configuration, run ./run-server.sh again" >&2
         echo "" >&2
         return 1
     fi

@@ -177,7 +177,7 @@ Available simulator tests include:
 - `memory_validation` - Conversation memory validation
 - `model_thinking_config` - Model-specific thinking configuration behavior
 - `o3_model_selection` - O3 model selection and usage validation
-- `ollama_custom_url` - Ollama custom URL endpoint functionality
+
 - `openrouter_fallback` - OpenRouter fallback behavior when only provider
 - `openrouter_models` - OpenRouter model functionality and alias mapping
 - `token_allocation_validation` - Token allocation and conversation history validation
