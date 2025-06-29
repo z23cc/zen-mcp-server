@@ -100,6 +100,21 @@ class SimpleTool(BaseTool):
         """
         return []
 
+    def get_annotations(self) -> Optional[dict[str, Any]]:
+        """
+        Return tool annotations. Simple tools are read-only by default.
+
+        All simple tools perform operations without modifying the environment.
+        They may call external AI models for analysis or conversation, but they
+        don't write files or make system changes.
+
+        Override this method if your simple tool needs different annotations.
+
+        Returns:
+            Dictionary with readOnlyHint set to True
+        """
+        return {"readOnlyHint": True}
+
     def format_response(self, response: str, request, model_info: Optional[dict] = None) -> str:
         """
         Format the AI response before returning to the client.
@@ -380,7 +395,7 @@ class SimpleTool(BaseTool):
                     images, model_context=self._model_context, continuation_id=continuation_id
                 )
                 if image_validation_error:
-                    return [TextContent(type="text", text=json.dumps(image_validation_error))]
+                    return [TextContent(type="text", text=json.dumps(image_validation_error, ensure_ascii=False))]
 
             # Get and validate temperature against model constraints
             temperature, temp_warnings = self.get_validated_temperature(request, self._model_context)
@@ -398,7 +413,9 @@ class SimpleTool(BaseTool):
             provider = self._model_context.provider
 
             # Get system prompt for this tool
-            system_prompt = self.get_system_prompt()
+            base_system_prompt = self.get_system_prompt()
+            language_instruction = self.get_language_instruction()
+            system_prompt = language_instruction + base_system_prompt
 
             # Generate AI response using the provider
             logger.info(f"Sending request to {provider.get_provider_type().value} API for {self.get_name()}")

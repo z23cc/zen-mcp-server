@@ -83,7 +83,7 @@ class ModelProviderRegistry:
         2. CUSTOM - For local/private models with specific endpoints
 
         Args:
-            model_name: Name of the model (e.g., "gpt-4o", "o3-mini")
+            model_name: Name of the model (e.g., "gpt-4o", "o3")
 
         Returns:
             ModelProvider instance that supports this model
@@ -257,14 +257,12 @@ class ModelProviderRegistry:
 
         elif tool_category == ToolModelCategory.FAST_RESPONSE:
             # Prefer fast, cost-efficient models
-            if openai_available and "o4-mini" in openai_models:
-                return "o4-mini"  # Latest, fast and efficient
-            elif openai_available and "o3-mini" in openai_models:
-                return "o3-mini"  # Second choice
-            elif openai_available and "flash" in openai_models:
+            if openai_available and "flash" in openai_models:
                 return "flash"  # Gemini Flash for speed
             elif openai_available and "gpt-4o-mini" in openai_models:
                 return "gpt-4o-mini"  # Fast GPT-4 variant
+            elif openai_available and "o3" in openai_models:
+                return "o3"  # O3 for reasoning
             elif openai_available and openai_models:
                 # Fall back to any available OpenAI model
                 return openai_models[0]
@@ -273,10 +271,8 @@ class ModelProviderRegistry:
                 return "gpt-4o-mini"
 
         # BALANCED or no category specified - use existing balanced logic
-        if openai_available and "o4-mini" in openai_models:
-            return "o4-mini"  # Latest balanced performance/cost
-        elif openai_available and "o3-mini" in openai_models:
-            return "o3-mini"  # Second choice
+        if openai_available and "o3" in openai_models:
+            return "o3"  # O3 for balanced reasoning
         elif openai_available and "pro" in openai_models:
             return "pro"  # Gemini Pro for balanced performance
         elif openai_available and "gpt-4o" in openai_models:

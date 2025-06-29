@@ -17,12 +17,12 @@ class ToolModelCategory(Enum):
 
 
 class ContinuationOffer(BaseModel):
-    """Offer for Claude to continue conversation when Gemini doesn't ask follow-up"""
+    """Offer for CLI agent to continue conversation when Gemini doesn't ask follow-up"""
 
     continuation_id: str = Field(
         ..., description="Thread continuation ID for multi-turn conversations across different tools"
     )
-    note: str = Field(..., description="Message explaining continuation opportunity to Claude")
+    note: str = Field(..., description="Message explaining continuation opportunity to CLI agent")
     remaining_turns: int = Field(..., description="Number of conversation turns remaining")
 
 
@@ -48,7 +48,7 @@ class ToolOutput(BaseModel):
     content_type: Literal["text", "markdown", "json"] = "text"
     metadata: Optional[dict[str, Any]] = Field(default_factory=dict)
     continuation_offer: Optional[ContinuationOffer] = Field(
-        None, description="Optional offer for Claude to continue conversation"
+        None, description="Optional offer for Agent to continue conversation"
     )
 
 

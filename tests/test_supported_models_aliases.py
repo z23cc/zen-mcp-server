@@ -47,19 +47,10 @@ class TestSupportedModelsAliases:
             assert isinstance(config.aliases, list), f"{model_name} aliases must be a list"
 
         # Test specific aliases
-        assert "mini" in provider.SUPPORTED_MODELS["o4-mini"].aliases
-        assert "o4mini" in provider.SUPPORTED_MODELS["o4-mini"].aliases
-        assert "o3mini" in provider.SUPPORTED_MODELS["o3-mini"].aliases
         assert "o3-pro" in provider.SUPPORTED_MODELS["o3-pro-2025-06-10"].aliases
-        assert "o4mini" in provider.SUPPORTED_MODELS["o4-mini"].aliases
-        assert "gpt4.1" in provider.SUPPORTED_MODELS["gpt-4.1-2025-04-14"].aliases
 
         # Test alias resolution
-        assert provider._resolve_model_name("mini") == "o4-mini"
-        assert provider._resolve_model_name("o3mini") == "o3-mini"
         assert provider._resolve_model_name("o3-pro") == "o3-pro-2025-06-10"
-        assert provider._resolve_model_name("o4mini") == "o4-mini"
-        assert provider._resolve_model_name("gpt4.1") == "gpt-4.1-2025-04-14"
 
         # Test case insensitive resolution
         assert provider._resolve_model_name("Mini") == "o4-mini"
@@ -74,21 +65,7 @@ class TestSupportedModelsAliases:
             assert hasattr(config, "aliases"), f"{model_name} must have aliases attribute"
             assert isinstance(config.aliases, list), f"{model_name} aliases must be a list"
 
-        # Test specific aliases
-        assert "grok" in provider.SUPPORTED_MODELS["grok-3"].aliases
-        assert "grok3" in provider.SUPPORTED_MODELS["grok-3"].aliases
-        assert "grok3fast" in provider.SUPPORTED_MODELS["grok-3-fast"].aliases
-        assert "grokfast" in provider.SUPPORTED_MODELS["grok-3-fast"].aliases
 
-        # Test alias resolution
-        assert provider._resolve_model_name("grok") == "grok-3"
-        assert provider._resolve_model_name("grok3") == "grok-3"
-        assert provider._resolve_model_name("grok3fast") == "grok-3-fast"
-        assert provider._resolve_model_name("grokfast") == "grok-3-fast"
-
-        # Test case insensitive resolution
-        assert provider._resolve_model_name("Grok") == "grok-3"
-        assert provider._resolve_model_name("GROKFAST") == "grok-3-fast"
 
     def test_dial_provider_aliases(self):
         """Test DIAL provider's alias structure."""
@@ -134,13 +111,7 @@ class TestSupportedModelsAliases:
         assert "o3-mini" in openai_models
         assert "o3mini" in openai_models
 
-        # Test XAI
-        xai_provider = XAIModelProvider("test-key")
-        xai_models = xai_provider.list_models(respect_restrictions=False)
-        assert "grok-3" in xai_models
-        assert "grok" in xai_models
-        assert "grok-3-fast" in xai_models
-        assert "grokfast" in xai_models
+
 
         # Test DIAL
         dial_provider = DIALModelProvider("test-key")

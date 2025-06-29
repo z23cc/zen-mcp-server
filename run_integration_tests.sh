@@ -30,7 +30,7 @@ fi
 echo "🔑 Checking API key availability:"
 echo "---------------------------------"
 
-# Check API configuration
+# Check OpenAI API configuration
 if [[ -n "$OPENAI_API_KEY" ]] || grep -q "OPENAI_API_KEY=" .env 2>/dev/null; then
     echo "✅ OPENAI_API_KEY configured"
 
@@ -42,13 +42,14 @@ if [[ -n "$OPENAI_API_KEY" ]] || grep -q "OPENAI_API_KEY=" .env 2>/dev/null; the
         elif [[ "$base_url" == *"api.openai.com"* ]]; then
             echo "✅ Official OpenAI endpoint configured"
         else
-            echo "✅ Custom endpoint configured: $base_url"
+            echo "✅ Custom OpenAI-compatible endpoint configured: $base_url"
         fi
     else
         echo "✅ Using default OpenAI endpoint"
     fi
 else
     echo "❌ OPENAI_API_KEY not found"
+    echo "   Please add OPENAI_API_KEY to your .env file"
 fi
 
 echo ""

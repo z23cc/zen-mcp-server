@@ -91,11 +91,9 @@ class TestListModelsTool:
             # Check all show as configured
             assert "Google Gemini ✅" in content
             assert "OpenAI ✅" in content
-            assert "X.AI (Grok) ✅" in content
 
             # Check models are listed
             assert "`o3`" in content
-            assert "`grok`" in content
 
             # Check summary
             assert "**Configured Providers**: 3" in content

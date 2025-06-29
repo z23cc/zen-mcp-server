@@ -33,10 +33,6 @@ GEMINI_API_KEY=your_gemini_api_key_here
 # OpenAI API  
 OPENAI_API_KEY=your_openai_api_key_here
 # Get from: https://platform.openai.com/api-keys
-
-# X.AI GROK API
-XAI_API_KEY=your_xai_api_key_here
-# Get from: https://console.x.ai/
 ```
 
 **Option 2: OpenRouter (Access multiple models through one API)**
@@ -63,7 +59,7 @@ CUSTOM_MODEL_NAME=llama3.2                          # Default model
 
 **Default Model Selection:**
 ```env
-# Options: 'auto', 'pro', 'flash', 'o3', 'o3-mini', 'o4-mini', etc.
+# Options: 'auto', 'pro', 'flash', 'o3', etc.
 DEFAULT_MODEL=auto  # Claude picks best model for each task (recommended)
 ```
 
@@ -72,9 +68,7 @@ DEFAULT_MODEL=auto  # Claude picks best model for each task (recommended)
 - **`pro`** (Gemini 2.5 Pro): Extended thinking, deep analysis
 - **`flash`** (Gemini 2.0 Flash): Ultra-fast responses  
 - **`o3`**: Strong logical reasoning (200K context)
-- **`o3-mini`**: Balanced speed/quality (200K context)
-- **`o4-mini`**: Latest reasoning model, optimized for shorter contexts
-- **`grok`**: GROK-3 advanced reasoning (131K context)
+
 - **Custom models**: via OpenRouter or local APIs
 
 ### Thinking Mode Configuration
@@ -101,51 +95,41 @@ Control which models can be used from each provider for cost control, compliance
 # Empty or unset = all models allowed (default)
 
 # OpenAI model restrictions
-OPENAI_ALLOWED_MODELS=o3-mini,o4-mini,mini
+OPENAI_ALLOWED_MODELS=o3,gpt-4o
 
 # Gemini model restrictions  
 GOOGLE_ALLOWED_MODELS=flash,pro
 
 # OpenAI-compatible model restrictions
-OPENAI_ALLOWED_MODELS=o3,o3-mini,o4-mini,gpt-4o
+OPENAI_ALLOWED_MODELS=o3,gpt-4o
 ```
 
 **Supported Model Names:**
 
 **OpenAI-compatible Models:**
 - `o3` (200K context, high reasoning)
-- `o3-mini` (200K context, balanced)
 - `o3-pro` (200K context, premium reasoning)
-- `o4-mini` (200K context, latest balanced)
-- `gpt-4.1` (128K context, advanced)
 - `gpt-4o` (128K context, multimodal)
 - `gemini-2.5-flash` (1M context, fast)
 - `gemini-2.5-pro` (1M context, powerful)
 - `deepseek-r1` (64K context, thinking mode)
-- `mini` (shorthand for o4-mini)
 - `pro` (shorthand for gemini-2.5-pro)
 - `flash` (shorthand for gemini-2.5-flash)
 
-**X.AI GROK Models:**
-- `grok-3` (131K context, advanced reasoning)
-- `grok-3-fast` (131K context, higher performance)
-- `grok` (shorthand for grok-3)
-- `grok3` (shorthand for grok-3)
-- `grokfast` (shorthand for grok-3-fast)
+
 
 **Example Configurations:**
 ```env
 # Cost control - only cheap models
-OPENAI_ALLOWED_MODELS=o4-mini
+OPENAI_ALLOWED_MODELS=gpt-4o
 GOOGLE_ALLOWED_MODELS=flash
 
 # Single model standardization
-OPENAI_ALLOWED_MODELS=o4-mini
+OPENAI_ALLOWED_MODELS=o3
 GOOGLE_ALLOWED_MODELS=pro
 
 # Balanced selection
 GOOGLE_ALLOWED_MODELS=flash,pro
-XAI_ALLOWED_MODELS=grok,grok-3-fast
 ```
 
 ### Advanced Configuration
@@ -181,7 +165,6 @@ LOG_LEVEL=DEBUG  # Default: shows detailed operational messages
 DEFAULT_MODEL=auto
 GEMINI_API_KEY=your-gemini-key
 OPENAI_API_KEY=your-openai-key
-XAI_API_KEY=your-xai-key
 LOG_LEVEL=DEBUG
 CONVERSATION_TIMEOUT_HOURS=1
 ```
@@ -192,7 +175,7 @@ CONVERSATION_TIMEOUT_HOURS=1
 DEFAULT_MODEL=auto
 OPENAI_API_KEY=your-api-key
 OPENAI_BASE_URL=https://your-endpoint.com/v1
-OPENAI_ALLOWED_MODELS=o4-mini,pro,flash
+OPENAI_ALLOWED_MODELS=o3,pro,flash
 LOG_LEVEL=INFO
 CONVERSATION_TIMEOUT_HOURS=3
 ```

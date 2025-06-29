@@ -1054,7 +1054,7 @@ validate_api_keys() {
     fi
 
     if [[ "$has_key" == false ]]; then
-        print_error "No API configuration found in .env!"
+        print_error "No API keys found in .env!"
         echo "" >&2
         echo "Please edit .env and add your API configuration:" >&2
         echo "  OPENAI_API_KEY=your-actual-key" >&2
@@ -1072,7 +1072,7 @@ validate_api_keys() {
         echo "  OPENAI_API_KEY=sk-..." >&2
         echo "  OPENAI_BASE_URL=https://api-key.info/v1" >&2
         echo "" >&2
-        print_info "After adding your API configuration, run ./run-server.sh again" >&2
+        print_info "After adding your API keys, run ./run-server.sh again" >&2
         echo "" >&2
         return 1
     fi

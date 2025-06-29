@@ -14,9 +14,9 @@ Environment Variables:
 - DIAL_ALLOWED_MODELS: Comma-separated list of allowed DIAL models
 
 Example:
-    OPENAI_ALLOWED_MODELS=o3-mini,o4-mini
+    OPENAI_ALLOWED_MODELS=o3,gpt-4o
     GOOGLE_ALLOWED_MODELS=flash
-    XAI_ALLOWED_MODELS=grok-3,grok-3-fast
+    OPENAI_ALLOWED_MODELS=o3,gpt-4o
     OPENROUTER_ALLOWED_MODELS=opus,sonnet,mistral
 """
 

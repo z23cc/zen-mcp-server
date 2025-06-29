@@ -153,6 +153,19 @@ class BaseTool(ABC):
         """
         pass
 
+    def get_annotations(self) -> Optional[dict[str, Any]]:
+        """
+        Return optional annotations for this tool.
+
+        Annotations provide hints about tool behavior without being security-critical.
+        They help MCP clients make better decisions about tool usage.
+
+        Returns:
+            Optional[dict]: Dictionary with annotation fields like readOnlyHint, destructiveHint, etc.
+                           Returns None if no annotations are needed.
+        """
+        return None
+
     def requires_model(self) -> bool:
         """
         Return whether this tool requires AI model access.
@@ -1066,6 +1079,42 @@ Consider requesting searches for:
 - Performance benchmarks and optimizations
 
 When recommending searches, be specific about what information you need and why it would improve your analysis. Always remember to instruct Claude to use the continuation_id from this response when providing search results."""
+
+    def get_language_instruction(self) -> str:
+        """
+        Generate language instruction based on LOCALE configuration.
+
+        Returns:
+            str: Language instruction to prepend to prompt, or empty string if
+                 no locale set
+        """
+        # Read LOCALE directly from environment to support dynamic changes
+        # This allows tests to modify os.environ["LOCALE"] and see the changes
+        import os
+
+        locale = os.getenv("LOCALE", "zh-CN").strip()
+
+        if not locale:
+            return ""
+
+        # Map common locale codes to language instructions
+        locale_map = {
+            "zh-CN": "请始终用中文回复。",
+            "zh-TW": "請始終用繁體中文回復。",
+            "en-US": "Always respond in English.",
+            "ja-JP": "常に日本語で回答してください。",
+            "ko-KR": "항상 한국어로 답변해 주세요.",
+            "fr-FR": "Répondez toujours en français.",
+            "de-DE": "Antworten Sie immer auf Deutsch.",
+            "es-ES": "Responde siempre en español.",
+            "it-IT": "Rispondi sempre in italiano.",
+            "pt-PT": "Responda sempre em português.",
+        }
+
+        # Get specific instruction or use generic format
+        instruction = locale_map.get(locale, f"Always respond in {locale}.")
+
+        return f"{instruction}\n\n"
 
     # === ABSTRACT METHODS FOR SIMPLE TOOLS ===
 

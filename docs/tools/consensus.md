@@ -37,13 +37,13 @@ security implications, flash on implementation speed, and pro stay neutral for o
 
 **Natural Language Stance Assignment:**
 ```
-Use consensus tool with gemini being "for" the proposal and grok being "against" to debate 
+Use consensus tool with gemini being "for" the proposal and o3 being "against" to debate
 whether we should adopt microservices architecture
 ```
 
 ```
 I want to work on module X and Y, unsure which is going to be more popular with users of my app. 
-Get a consensus from gemini supporting the idea for implementing X, grok opposing it, and flash staying neutral
+Get a consensus from gemini supporting the idea for implementing X, o3 opposing it, and flash staying neutral
 ```
 
 ## Key Features

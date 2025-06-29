@@ -57,24 +57,6 @@ class OpenAIModelProvider(ModelProvider):
             description="Strong reasoning (200K context) - Logical problems, code generation, systematic analysis",
             aliases=[],
         ),
-        "o3-mini": ModelCapabilities(
-            provider=ProviderType.OPENAI,
-            model_name="o3-mini",
-            friendly_name="OpenAI (O3-mini)",
-            context_window=200_000,  # 200K tokens
-            max_output_tokens=65536,  # 64K max output tokens
-            supports_extended_thinking=False,
-            supports_system_prompts=True,
-            supports_streaming=True,
-            supports_function_calling=True,
-            supports_json_mode=True,
-            supports_images=True,  # O3 models support vision
-            max_image_size_mb=20.0,  # 20MB per OpenAI docs
-            supports_temperature=False,  # O3 models don't accept temperature parameter
-            temperature_constraint=create_temperature_constraint("fixed"),
-            description="Fast O3 variant (200K context) - Balanced performance/speed, moderate complexity",
-            aliases=["o3mini", "o3-mini"],
-        ),
         "o3-pro": ModelCapabilities(
             provider=ProviderType.OPENAI,
             model_name="o3-pro",
@@ -92,42 +74,6 @@ class OpenAIModelProvider(ModelProvider):
             temperature_constraint=create_temperature_constraint("fixed"),
             description="Professional-grade reasoning (200K context) - EXTREMELY EXPENSIVE: Only for the most complex problems requiring universe-scale complexity analysis OR when the user explicitly asks for this model. Use sparingly for critical architectural decisions or exceptionally complex debugging that other models cannot handle.",
             aliases=["o3-pro"],
-        ),
-        "o4-mini": ModelCapabilities(
-            provider=ProviderType.OPENAI,
-            model_name="o4-mini",
-            friendly_name="OpenAI (O4-mini)",
-            context_window=200_000,  # 200K tokens
-            max_output_tokens=65536,  # 64K max output tokens
-            supports_extended_thinking=False,
-            supports_system_prompts=True,
-            supports_streaming=True,
-            supports_function_calling=True,
-            supports_json_mode=True,
-            supports_images=True,  # O4 models support vision
-            max_image_size_mb=20.0,  # 20MB per OpenAI docs
-            supports_temperature=False,  # O4 models don't accept temperature parameter
-            temperature_constraint=create_temperature_constraint("fixed"),
-            description="Latest reasoning model (200K context) - Optimized for shorter contexts, rapid reasoning",
-            aliases=["mini", "o4mini", "o4-mini"],
-        ),
-        "gpt-4.1": ModelCapabilities(
-            provider=ProviderType.OPENAI,
-            model_name="gpt-4.1",
-            friendly_name="OpenAI (GPT 4.1)",
-            context_window=1_000_000,  # 1M tokens
-            max_output_tokens=32_768,
-            supports_extended_thinking=False,
-            supports_system_prompts=True,
-            supports_streaming=True,
-            supports_function_calling=True,
-            supports_json_mode=True,
-            supports_images=True,  # GPT-4.1 supports vision
-            max_image_size_mb=20.0,  # 20MB per OpenAI docs
-            supports_temperature=True,  # Regular models accept temperature parameter
-            temperature_constraint=create_temperature_constraint("range"),
-            description="GPT-4.1 (1M context) - Advanced reasoning model with large context window",
-            aliases=["gpt4.1"],
         ),
         "gemini-2.5-pro": ModelCapabilities(
             provider=ProviderType.OPENAI,
@@ -166,42 +112,6 @@ class OpenAIModelProvider(ModelProvider):
             max_thinking_tokens=24576,  # Flash 2.5 thinking budget limit
             description="Ultra-fast (1M context) - Quick analysis, simple queries, rapid iterations",
             aliases=["flash", "flash2.5"],
-        ),
-        "grok-3": ModelCapabilities(
-            provider=ProviderType.OPENAI,
-            model_name="grok-3",
-            friendly_name="X.AI (Grok 3)",
-            context_window=131_072,  # 131K tokens
-            max_output_tokens=131072,
-            supports_extended_thinking=False,
-            supports_system_prompts=True,
-            supports_streaming=True,
-            supports_function_calling=True,
-            supports_json_mode=False,  # Assuming GROK doesn't have JSON mode yet
-            supports_images=False,  # Assuming GROK is text-only for now
-            max_image_size_mb=0.0,
-            supports_temperature=True,
-            temperature_constraint=create_temperature_constraint("range"),
-            description="GROK-3 (131K context) - Advanced reasoning model from X.AI, excellent for complex analysis",
-            aliases=["grok", "grok3"],
-        ),
-        "grok-3-deepsearch": ModelCapabilities(
-            provider=ProviderType.OPENAI,
-            model_name="grok-3-deepsearch",
-            friendly_name="X.AI (Grok 3 deepsearch)",
-            context_window=1_048_576, 
-            max_output_tokens=1_048_576,
-            supports_extended_thinking=True,
-            supports_system_prompts=True,
-            supports_streaming=True,
-            supports_function_calling=True,
-            supports_json_mode=False,  # Assuming GROK doesn't have JSON mode yet
-            supports_images=False,  # Assuming GROK is text-only for now
-            max_image_size_mb=0.0,
-            supports_temperature=True,
-            temperature_constraint=create_temperature_constraint("range"),
-            description="grok-3-deepsearch (1M context) - Higher performance variant, faster processing but more expensive",
-            aliases=["grok3r"],
         ),
     }
 
@@ -747,11 +657,8 @@ class OpenAIModelProvider(ModelProvider):
             "gpt-4o-mini",
             "gpt-4-turbo",
             "gpt-4-vision-preview",
-            "gpt-4.1",  # GPT-4.1 supports vision
             "o3",
-            "o3-mini",
             "o3-pro",
-            "o4-mini",
             # Note: Claude models would be handled by a separate provider
         }
         supports = model_name.lower() in vision_models
